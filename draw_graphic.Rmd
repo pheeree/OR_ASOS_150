@@ -1,0 +1,512 @@
+---
+title: "날씨 인포그래칙"
+output: html_notebook
+---
+
+# 1. Packages
+
+grid : R의 base 그래픽 시스템
+
+```{r}
+library(tidyverse)
+library(draw)
+library(grid)
+library(gridExtra)
+```
+
+# 2. Draw
+
+## (1) 변수 설정
+
+### 1) 24절기
+
+```{r}
+list_season <- c("소한", "대한", "입춘", "우수", "경칩", "춘분", "청명", "곡우", "입하"
+                 , "소만", "망종", "하지", "소서", "대서", "입추", "처서", "백로", "추분"
+                 , "한로", "상강", "입동", "소설", "대설", "동지")
+```
+
+## (2) Clouds
+
+```{r}
+dr_cloud <- function(year, r){
+  bdr      <- rectGrob(x = 0.50, y = 0.50, width = 1, height = 1, gp = gpar(lwd = 0.1, col = "grey"))
+  year     <- textGrob(year, x = 0.1, y = 0.95, gp = gpar(fontsize = 4))
+  value    <- textGrob(r, x = 0.9, y = 0.95, gp = gpar(fontsize = 3))
+  cloud01  <- circleGrob(x = 0.20, y = 0.20, r = r/100, gp = gpar(lwd = 0.1))
+  cloud02  <- circleGrob(x = 0.50, y = 0.20, r = r/100, gp = gpar(lwd = 0.1))
+  cloud03  <- circleGrob(x = 0.80, y = 0.20, r = r/100, gp = gpar(lwd = 0.1))
+  cloud04  <- circleGrob(x = 0.20, y = 0.50, r = r/100, gp = gpar(lwd = 0.1))
+  cloud05  <- circleGrob(x = 0.50, y = 0.50, r = r/100, gp = gpar(lwd = 0.1))
+  cloud06  <- circleGrob(x = 0.80, y = 0.50, r = r/100, gp = gpar(lwd = 0.1))
+  cloud07  <- circleGrob(x = 0.20, y = 0.80, r = r/100, gp = gpar(lwd = 0.1))
+  cloud08  <- circleGrob(x = 0.50, y = 0.80, r = r/100, gp = gpar(lwd = 0.1))
+  cloud09  <- circleGrob(x = 0.80, y = 0.80, r = r/100, gp = gpar(lwd = 0.1))
+  x <- gList(bdr, year, value
+             , cloud01, cloud02, cloud03, cloud04, cloud05, cloud06, cloud07, cloud08, cloud09)
+  x <- gTree(children = x)
+  return(x)
+}
+
+```
+
+```{r}
+season <- "동지"
+for (yyyy in 1957:2020) {
+  assign(paste0("cloud", yyyy)
+         , dr_cloud(yyyy, ASOS159_64$avgTca[which(ASOS159_64$subdvs == season & ASOS159_64$year == yyyy)]))
+}
+```
+
+```{r}
+grid.arrange(arrangeGrob(cloud2020, cloud2019, cloud2018, cloud2017, cloud2016
+                         , cloud2015, cloud2014, cloud2013, cloud2012, cloud2011
+                         , cloud2010, cloud2009, cloud2008, cloud2007, cloud2006
+                         , cloud2005, cloud2004, cloud2003, cloud2002, cloud2001
+                         , cloud2000, cloud1999, cloud1998, cloud1997, cloud1996
+                         , cloud1995, cloud1994, cloud1993, cloud1992, cloud1991
+                         , cloud1990, cloud1989, cloud1988, cloud1987, cloud1986
+                         , cloud1985, cloud1984, cloud1983, cloud1982, cloud1981
+                         , cloud1980, cloud1979, cloud1978, cloud1977, cloud1976
+                         , cloud1975, cloud1974, cloud1973, cloud1972, cloud1971
+                         , cloud1970, cloud1969, cloud1968, cloud1967, cloud1966
+                         , cloud1965, cloud1964, cloud1963, cloud1962, cloud1961
+                         , cloud1960, cloud1959, cloud1958, cloud1957
+                         ,ncol = 8)
+             , widths = unit(180, "mm")
+             , heights = unit(180, "mm"))
+```
+
+```{r}
+for (ssn in list_season) {
+  season <- ssn
+  for (yyyy in 1957:2020) {
+  assign(paste0("cloud", yyyy)
+         , dr_cloud(yyyy, ASOS159_64$avgTca[which(ASOS159_64$subdvs == season & ASOS159_64$year == yyyy)]))
+  }
+  
+  cloud_plot <- grid.arrange(arrangeGrob(cloud2020, cloud2019, cloud2018, cloud2017, cloud2016
+                                       , cloud2015, cloud2014, cloud2013, cloud2012, cloud2011
+                                       , cloud2010, cloud2009, cloud2008, cloud2007, cloud2006
+                                       , cloud2005, cloud2004, cloud2003, cloud2002, cloud2001
+                                       , cloud2000, cloud1999, cloud1998, cloud1997, cloud1996
+                                       , cloud1995, cloud1994, cloud1993, cloud1992, cloud1991
+                                       , cloud1990, cloud1989, cloud1988, cloud1987, cloud1986
+                                       , cloud1985, cloud1984, cloud1983, cloud1982, cloud1981
+                                       , cloud1980, cloud1979, cloud1978, cloud1977, cloud1976
+                                       , cloud1975, cloud1974, cloud1973, cloud1972, cloud1971
+                                       , cloud1970, cloud1969, cloud1968, cloud1967, cloud1966
+                                       , cloud1965, cloud1964, cloud1963, cloud1962, cloud1961
+                                       , cloud1960, cloud1959, cloud1958, cloud1957
+                                       ,ncol = 8)
+                           , widths = unit(180, "mm")
+                           , heights = unit(180, "mm"))
+  ggsave(cloud_plot, file = paste("cloud_"
+                                  , which(list_season == ssn), season, ".pdf", sep = "")
+         , width = 200, height = 200, units = c("mm"))
+}
+```
+
+```{r}
+cloud_plot <- grid.arrange(arrangeGrob(cloud2020, cloud2019, cloud2018, cloud2017, cloud2016
+                                       , cloud2015, cloud2014, cloud2013, cloud2012, cloud2011
+                                       , cloud2010, cloud2009, cloud2008, cloud2007, cloud2006
+                                       , cloud2005, cloud2004, cloud2003, cloud2002, cloud2001
+                                       , cloud2000, cloud1999, cloud1998, cloud1997, cloud1996
+                                       , cloud1995, cloud1994, cloud1993, cloud1992, cloud1991
+                                       , cloud1990, cloud1989, cloud1988, cloud1987, cloud1986
+                                       , cloud1985, cloud1984, cloud1983, cloud1982, cloud1981
+                                       , cloud1980, cloud1979, cloud1978, cloud1977, cloud1976
+                                       , cloud1975, cloud1974, cloud1973, cloud1972, cloud1971
+                                       , cloud1970, cloud1969, cloud1968, cloud1967, cloud1966
+                                       , cloud1965, cloud1964, cloud1963, cloud1962, cloud1961
+                                       , cloud1960, cloud1959, cloud1958, cloud1957
+                                       ,ncol = 8)
+                           , widths = unit(180, "mm")
+                           , heights = unit(180, "mm"))
+
+ ggsave(cloud_plot, file = paste("cloud_", season, ".pdf", sep = "")
+        , width = 200, height = 200, units = c("mm"))
+```
+
+## (3) 최저 최고 기온 강우량 함수
+
+```{r}
+dr_dgr_Rn  <- function(year, minTa, maxTa, sumRn){
+  bdr      <- rectGrob(x = 0.50, y = 0.50, width = 1, height = 1
+                       , gp = gpar(lwd = 0.1, col = "grey"))
+  year     <- textGrob(year, x = 0.1, y = 0.95, gp = gpar(fontsize = 4))
+  
+  ifelse(minTa < 0
+         , value_nT <- textGrob(minTa, x = 0.50, y = 0.10
+                                , gp = gpar(fontsize = 3, col = "blue"))
+         , value_nT <- textGrob(minTa, x = 0.50, y = 0.10
+                                , gp = gpar(fontsize = 3, col = "red")))
+  ifelse(maxTa < 0
+         , value_mT <- textGrob(maxTa, x = 0.50, y = 0.90
+                                , gp = gpar(fontsize = 3, col = "blue"))
+         , value_mT <- textGrob(maxTa, x = 0.50, y = 0.90
+                                , gp = gpar(fontsize = 3, col = "red")))
+  
+  ifelse(maxTa < 0
+         , cirmaxTa <- circleGrob(x = 0.50, y = 0.50, r = maxTa/100
+                                  , gp = gpar(lwd = 0.1, col = "blue", alpha = 0.7))
+         , cirmaxTa <- circleGrob(x = 0.50, y = 0.50, r = maxTa/100
+                                  , gp = gpar(lwd = 0.1, col = "red", alpha = 0.7)))
+  ifelse(minTa < 0
+         , cirminTa <- circleGrob(x = 0.50, y = 0.50, r = abs(minTa)/100
+                                  , gp = gpar(lwd = 0.1, col = "blue", alpha = 0.7))
+         , cirminTa <- circleGrob(x = 0.50, y = 0.50, r = abs(minTa)/100
+                                  , gp = gpar(lwd = 0.1, col = "red", alpha = 0.7)))
+  
+  value_Rn <- textGrob(sumRn, x = 0.90, y = sumRn/500+0.03
+                       , gp = gpar(fontsize = 3, col = "yellow"))
+ # lineRn   <- segmentsGrob(x0 = 0.00, x1 = 1.00, y0 = sumRn/500, y1 = sumRn/500
+ #                          , gp = gpar(lwd = 0.3, col = "yellow"))
+  lineRn   <- rectGrob(x = 0.5, y = 0.0, width = 1.0, height = sumRn/500
+                       , just = "bottom"
+                       , gp = gpar(lwd = 0.1, col = "yellow"))
+
+  x <- gList(bdr, year, value_nT, value_mT, value_Rn, cirminTa, cirmaxTa, lineRn)
+  x <- gTree(children = x)
+  return(x)
+}
+```
+
+```{r}
+for (ssn in list_season) {
+  season <- ssn
+  for (yyyy in 1957:2020) {
+  assign(paste0("dgr_Rn", yyyy)
+         , dr_dgr_Rn(yyyy
+                     , ASOS159_64$minTa[
+                       which(ASOS159_64$subdvs == season & ASOS159_64$year == yyyy)
+                                        ]
+                         
+                     , ASOS159_64$maxTa[
+                       which(ASOS159_64$subdvs == season & ASOS159_64$year == yyyy)
+                                        ]
+                         
+                     , ASOS159_64$sumRn[
+                       which(ASOS159_64$subdvs == season & ASOS159_64$year == yyyy)
+                                        ]
+                     ))
+    }
+  
+  dgr_Rn_plot <- grid.arrange(arrangeGrob(dgr_Rn2020, dgr_Rn2019, dgr_Rn2018, dgr_Rn2017
+                                          , dgr_Rn2016, dgr_Rn2015, dgr_Rn2014, dgr_Rn2013
+                                          , dgr_Rn2012, dgr_Rn2011, dgr_Rn2010, dgr_Rn2009
+                                          , dgr_Rn2008, dgr_Rn2007, dgr_Rn2006, dgr_Rn2005
+                                          , dgr_Rn2004, dgr_Rn2003, dgr_Rn2002, dgr_Rn2001
+                                          , dgr_Rn2000, dgr_Rn1999, dgr_Rn1998, dgr_Rn1997
+                                          , dgr_Rn1996, dgr_Rn1995, dgr_Rn1994, dgr_Rn1993
+                                          , dgr_Rn1992, dgr_Rn1991, dgr_Rn1990, dgr_Rn1989
+                                          , dgr_Rn1988, dgr_Rn1987, dgr_Rn1986, dgr_Rn1985
+                                          , dgr_Rn1984, dgr_Rn1983, dgr_Rn1982, dgr_Rn1981
+                                          , dgr_Rn1980, dgr_Rn1979, dgr_Rn1978, dgr_Rn1977
+                                          , dgr_Rn1976, dgr_Rn1975, dgr_Rn1974, dgr_Rn1973
+                                          , dgr_Rn1972, dgr_Rn1971, dgr_Rn1970, dgr_Rn1969
+                                          , dgr_Rn1968, dgr_Rn1967, dgr_Rn1966, dgr_Rn1965
+                                          , dgr_Rn1964, dgr_Rn1963, dgr_Rn1962, dgr_Rn1961
+                                          , dgr_Rn1960, dgr_Rn1959, dgr_Rn1958, dgr_Rn1957
+                                          ,ncol = 8)
+                              , widths = unit(180, "mm")
+                              , heights = unit(180, "mm"))
+  ggsave(dgr_Rn_plot, file = paste("dgr_Rn_"
+                                   , which(list_season == ssn), season, ".pdf", sep = "")
+         , width = 200, height = 200, units = c("mm")
+         )
+}
+```
+
+3.  상대습도
+
+```{r}
+dr_Rhm  <- function(year, avgRhm){
+  bdr      <- rectGrob(x = 0.50, y = 0.50, width = 1, height = 1, gp = gpar(lwd = 0.1))
+  year     <- textGrob(year, x = 0.1, y = 0.95, gp = gpar(fontsize = 4))
+  value    <- textGrob(round(avgRhm/20), x = 0.50, y = 0.50, gp = gpar(fontsize = 6))
+  value_r  <- textGrob(avgRhm, x = 0.50, y = 0.10, gp = gpar(fontsize = 4, col = "blue"))
+
+  x <- gList(bdr, year, value, value_r)
+  x <- gTree(children = x)
+  return(x)
+}
+```
+
+```{r}
+rhm_size <- 0.3
+point01 <- pointsGrob(x = 0.5, y = 0.5, pch = 4, size = unit(rhm_size, "char")
+                      , gp = gpar(lwd = 0.1, col = "blue"))
+```
+
+```{r}
+rhm_size <- 0.3
+seq02 <- c(1, 3) 
+for (coord_x in seq02) {
+  for (coord_y in seq02) {
+    assign(paste0("point02_", coord_x, "_", coord_y)
+         , point03_1 <- pointsGrob(x = coord_x/4, y = coord_y/4, pch = 4
+                                   , size = unit(rhm_size, "char")
+                        , gp = gpar(lwd = 0.1, col = "blue"))
+         )
+  }
+}
+
+point02 <- gTree(children = gList(point02_1_1, point02_1_3, point02_3_1, point02_3_3))
+```
+
+```{r}
+rhm_size <- 0.3
+seq03 <- c(1, 3, 5) 
+for (coord_x in seq03) {
+  for (coord_y in seq03) {
+    assign(paste0("point03_", coord_x, "_", coord_y)
+         , point03_1 <- pointsGrob(x = coord_x/6, y = coord_y/6, pch = 4
+                                   , size = unit(rhm_size, "char")
+                        , gp = gpar(lwd = 0.1, col = "blue"))
+         )
+  }
+}
+
+
+point03 <- gTree(children = gList(point03_1_1, point03_1_3, point03_1_5, point03_3_1
+                                  , point03_3_3, point03_3_5, point03_5_1, point03_5_3
+                                  , point03_5_5))
+```
+
+```{r}
+rhm_size <- 0.3
+seq04 <- c(1, 3, 5, 7, 9) 
+for (coord_x in seq04) {
+  for (coord_y in seq04) {
+    assign(paste0("point04_", coord_x, "_", coord_y)
+         , point04_1 <- pointsGrob(x = coord_x/10, y = coord_y/10, pch = 4
+                                   , size = unit(rhm_size, "char")
+                        , gp = gpar(lwd = 0.1, col = "blue"))
+         )
+  }
+}
+
+point04 <- gTree(children = gList(point04_1_1, point04_1_3, point04_1_5, point04_1_7
+                                  , point04_1_9, point04_3_1, point04_3_3, point04_3_5
+                                  , point04_3_7, point04_3_9, point04_5_1, point04_5_3
+                                  , point04_5_5, point04_5_7, point04_5_9, point04_7_1
+                                  , point04_7_3, point04_7_5, point04_7_7, point04_7_9
+                                  , point04_9_1, point04_9_3, point04_9_5, point04_9_7
+                                  , point04_9_9))
+```
+
+```{r}
+rhm_size <- 0.3
+seq05 <- c(1, 3, 5, 7, 9, 11, 13) 
+for (coord_x in seq05) {
+  for (coord_y in seq05) {
+    assign(paste0("point05_", coord_x, "_", coord_y)
+         , point04_1 <- pointsGrob(x = coord_x/14, y = coord_y/14, pch = 4, size = unit(rhm_size, "char")
+                        , gp = gpar(lwd = 0.1, col = "blue"))
+         )
+  }
+}
+
+point05 <- gTree(children = gList(point05_1_1, point05_1_3, point05_1_5, point05_1_7
+                                  , point05_1_9, point05_1_11, point05_1_13, point05_3_1
+                                  , point05_3_3, point05_3_5, point05_3_7, point05_3_9
+                                  , point05_3_11, point05_3_13, point05_5_1, point05_5_3
+                                  , point05_5_5, point05_5_7, point05_5_9, point05_5_11
+                                  , point05_5_13, point05_7_1, point05_7_3, point05_7_5
+                                  , point05_7_7, point05_7_9, point05_7_11, point05_7_13
+                                  , point05_9_1, point05_9_3, point05_9_5, point05_9_7
+                                  , point05_9_9, point05_9_11, point05_9_13, point05_11_1
+                                  , point05_11_3, point05_11_5, point05_11_7, point05_11_9
+                                  , point05_11_11, point05_11_13, point05_13_1, point05_13_3
+                                  , point05_13_5, point05_13_7, point05_13_9, point05_13_11
+                                  , point05_13_13))
+```
+
+```{r}
+dr_Rhm_pnt  <- function(year, avgRhm){
+  bdr      <- rectGrob(x = 0.50, y = 0.50, width = 1, height = 1, gp = gpar(lwd = 0.1))
+  year     <- textGrob(year, x = 0.1, y = 0.95, gp = gpar(fontsize = 4))
+  value    <- round(avgRhm/20)
+  value_r  <- textGrob(avgRhm, x = 0.50, y = 0.10, gp = gpar(fontsize = 4, col = "blue"))
+  
+  ifelse(value <= 1
+         , point_r <- point01
+         , ifelse(value > 1 & value < 2
+                  , point_r <- point02
+                  , ifelse(value >= 2 & value < 3
+                           , point_r <- point03
+                           , ifelse(value >= 3 & value < 4
+                                    , point_r <- point04
+                                    , point_r <- point05)))
+         )
+  
+  x <- gList(bdr, year, value_r, point_r)
+  x <- gTree(children = x)
+  return(x)
+}
+```
+
+```{r}
+for (ssn in list_season) {
+  season <- ssn
+  for (yyyy in 1957:2020) {
+  assign(paste0("rhm_p_", yyyy)
+         , dr_Rhm_pnt(yyyy, ASOS159_64$avgRhm[which(ASOS159_64$subdvs == season & ASOS159_64$year == yyyy)]))
+    }
+  
+  rhm_plot <- grid.arrange(arrangeGrob(rhm_p_2020, rhm_p_2019, rhm_p_2018, rhm_p_2017
+                                       , rhm_p_2016, rhm_p_2015, rhm_p_2014, rhm_p_2013
+                                       , rhm_p_2012, rhm_p_2011, rhm_p_2010, rhm_p_2009
+                                       , rhm_p_2008, rhm_p_2007, rhm_p_2006, rhm_p_2005
+                                       , rhm_p_2004, rhm_p_2003, rhm_p_2002, rhm_p_2001
+                                       , rhm_p_2000, rhm_p_1999, rhm_p_1998, rhm_p_1997
+                                       , rhm_p_1996, rhm_p_1995, rhm_p_1994, rhm_p_1993
+                                       , rhm_p_1992, rhm_p_1991, rhm_p_1990, rhm_p_1989
+                                       , rhm_p_1988, rhm_p_1987, rhm_p_1986, rhm_p_1985
+                                       , rhm_p_1984, rhm_p_1983, rhm_p_1982, rhm_p_1981
+                                       , rhm_p_1980, rhm_p_1979, rhm_p_1978, rhm_p_1977
+                                       , rhm_p_1976, rhm_p_1975, rhm_p_1974, rhm_p_1973
+                                       , rhm_p_1972, rhm_p_1971, rhm_p_1970, rhm_p_1969
+                                       , rhm_p_1968, rhm_p_1967, rhm_p_1966, rhm_p_1965
+                                       , rhm_p_1964, rhm_p_1963, rhm_p_1962, rhm_p_1961
+                                       , rhm_p_1960, rhm_p_1959, rhm_p_1958, rhm_p_1957
+                                       , ncol = 8)
+                           , widths = unit(180, "mm")
+                           , heights = unit(180, "mm"))
+  ggsave(rhm_plot, file = paste("rhm_", which(list_season == ssn), season, ".pdf", sep = "")
+         , width = 200, height = 200, units = c("mm"))
+}
+```
+
+```{r}
+season <- "동지"
+for (yyyy in 1957:2020) {
+  assign(paste0("rhm", yyyy)
+         , rhm1972  <- dr_Rhm(yyyy, ASOS159_64$avgRhm[which(ASOS159_64$subdvs == season & ASOS159_64$year == yyyy)]))
+}
+```
+
+```{r}
+grid.arrange(arrangeGrob(rhm2020, rhm2019, rhm2018, rhm2017, rhm2016
+                         , rhm2015, rhm2014, rhm2013, rhm2012, rhm2011
+                         , rhm2010, rhm2009, rhm2008, rhm2007, rhm2006
+                         , rhm2005, rhm2004, rhm2003, rhm2002, rhm2001
+                         , rhm2000, rhm1999, rhm1998, rhm1997, rhm1996
+                         , rhm1995, rhm1994, rhm1993, rhm1992, rhm1991
+                         , rhm1990, rhm1989, rhm1988, rhm1987, rhm1986
+                         , rhm1985, rhm1984, rhm1983, rhm1982, rhm1981
+                         , rhm1980, rhm1979, rhm1978, rhm1977, rhm1976
+                         , rhm1975, rhm1974, rhm1973, rhm1972, rhm1971
+                         , rhm1970, rhm1969, rhm1968, rhm1967, rhm1966
+                         , rhm1965, rhm1964, rhm1963, rhm1962, rhm1961
+                         , rhm1960, rhm1959, rhm1958, rhm1957
+                         ,ncol = 8)
+             , widths = unit(180, "mm")
+             , heights = unit(180, "mm"))
+```
+
+```{r}
+radius <- 8
+vp1 <- viewport(x = unit(10, "mm"), y = unit(10, "mm")
+                  , width = unit(10, "mm"), height = unit(10, "mm"))
+pushViewport(vp1)
+dr_cloud(radius/100)
+dr_cloud(radius/100)
+dr_cloud(radius/100)
+dr_cloud(radius/100)
+popViewport()
+```
+
+# 1. GRID PACKAGE in R
+
+## (1) grid( )
+
+```{r}
+grid.show.layout(grid.layout(4, 2
+                             , heights=unit(rep(1, 4)
+                                           , c("lines", "lines", "lines", "null")
+                                           )
+                             , widths=unit(c(10, 10), "mm")))
+```
+
+```{r}
+grid.show.viewport(viewport(x=0.6, y=0.6,
+                            w=unit(1, "mm"), h=unit(1, "mm")))
+```
+
+```{r}
+grid.multipanel(vp=viewport(0.5, 0.5, 0.8, 0.8))
+```
+
+## (2) grid.frame( )
+
+```{r}
+grid.newpage()
+grid.frame(name = "gf", draw = TRUE)
+grid.pack("gf", rectGrob(gp = gpar(fill="grey")), width=unit(1, "millimeter"))
+grid.pack("gf", textGrob("hi there"), side="right")
+```
+
+```{r}
+grid.newpage()
+my_circle <- circleGrob(x = 0.5, y = 0.5, r = 0.5,
+                        gp = gpar(col = "gray", lty = 3))
+grid.draw(my_circle)
+```
+
+```{r}
+grid.newpage()
+ex_vp <- viewport(x = 0.5, y = 0.5, 
+                  just = c("center", "center"),
+                  height = 0.8, width = 0.8,
+                  xscale = c(0, 100), yscale = c(0, 100))
+pushViewport(ex_vp)
+grid.draw(rectGrob())
+grid.draw(circleGrob(x = unit(20, "native"), y = unit(5, "native"),
+                     r = 0.1, gp = gpar(fill = "lightblue")))
+grid.draw(circleGrob(x = unit(85, "native"), y = unit(8, "native"),
+                     r = 0.1, gp = gpar(fill = "darkred")))
+popViewport()
+
+```
+
+2.1 Layouts
+
+```{r}
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(5, 5)))
+
+grid.rect(gp = gpar(col = "grey"))
+
+grid.segments(c(1:4/5, rep(0, 4)), c(rep(0, 4), 1:3/4)
+              , c(1:3/4, rep(1, 4)), c(rep(1, 4), 1:3/4)
+              #, gp = gpar(col = "grey")
+              )
+pushViewport(viewport(layout.pos.col = 3:3, layout.pos.row = 3))
+grid.rect(gp = gpar(lwd = 3))
+popViewport(1)
+```
+
+```{r}
+grid.show.layout(grid.layout(7, 7
+                             , widths = unit(c(10, 10, 10, 10, 10, 10, 10)
+                                             , "mm")
+                             , heights = c(10, 10, 10, 10, 10, 10, 10)
+                             , c("mm", "mm", "mm", "mm")))  
+
+circle91 <- grid.draw(circleGrob(r = 0.01, gp = gpar(fill = "red")))
+cloud <- grid.draw(cloud2020)
+
+```
+
+```{r}
+grid.draw(rectGrob())
+sample_vp <- viewport(x = 0.5, y = 0.5, 
+                      width = 0.5, height = 0.5,
+                      just = c("left", "bottom"))
+pushViewport(sample_vp)
+grid.draw(roundrectGrob())
+popViewport()
+```
